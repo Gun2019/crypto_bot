@@ -55,6 +55,7 @@ def get_ohlcv_and_rsi(symbol):
     )
     bot.send_message(chat_id=CHAT_ID, text=msg)
 
+
 def monitor():
     symbols = get_usdt_symbols()
     print(f"Мониторинг {len(symbols)} монет...")
