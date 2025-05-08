@@ -47,13 +47,12 @@ def get_ohlcv_and_rsi(symbol):
     prev_vol = volumes[-2]
     curr_vol = volumes[-1]
     price = closes[-1]
-    rsi = calculate_rsi(closes[-15:])
-    return prev_vol, curr_vol, price, rsi
-
-def send_signal(symbol, prev_vol, curr_vol, price, rsi):
-    msg = f'📈 Сигнал по {symbol}!'
-           f'Объём: {prev_vol:.0f} → {curr_vol:.0f}
-           f'Цена: {price:.4f}, RSI: {rsi:.1f}')
+    def send_signal(symbol, prev_vol, curr_vol, price, rsi):
+    msg = (
+        f'📈 Сигнал по {symbol}!\n'
+        f'Объём: {prev_vol:.0f} → {curr_vol:.0f}\n'
+        f'Цена: {price:.4f}, RSI: {rsi:.1f}'
+    )
     bot.send_message(chat_id=CHAT_ID, text=msg)
 
 def monitor():
