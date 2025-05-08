@@ -51,7 +51,7 @@ def get_ohlcv_and_rsi(symbol):
     return prev_vol, curr_vol, price, rsi
 
 def send_signal(symbol, prev_vol, curr_vol, price, rsi):
-    msg = (f'📈 Сигнал по {symbol}!')
+    msg = f'📈 Сигнал по {symbol}!'
 '
            f'Объём: {prev_vol:.0f} → {curr_vol:.0f}
 '
