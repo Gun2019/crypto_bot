@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения из .env
 load_dotenv()
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+TELEGRAM_TOKEN = os.getenv("7522624625:AAHSdNSRaPM58r13AxEnlJl4okEwYKNlLKI")
+CHAT_ID = os.getenv("373789048")
 COINGLASS_API_KEY = os.getenv("COINGLASS_API_KEY")  # не используется пока
 INTERVAL = '1h'
 CHECK_INTERVAL = 600  # раз в 10 минут
@@ -51,7 +51,7 @@ def get_ohlcv_and_rsi(symbol):
     return prev_vol, curr_vol, price, rsi
 
 def send_signal(symbol, prev_vol, curr_vol, price, rsi):
-    msg = (f'📈 Сигнал по {symbol}!
+    msg = (f'📈 Сигнал по {symbol}!')
 '
            f'Объём: {prev_vol:.0f} → {curr_vol:.0f}
 '
