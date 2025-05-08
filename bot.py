@@ -52,9 +52,7 @@ def get_ohlcv_and_rsi(symbol):
 
 def send_signal(symbol, prev_vol, curr_vol, price, rsi):
     msg = f'📈 Сигнал по {symbol}!'
-'
            f'Объём: {prev_vol:.0f} → {curr_vol:.0f}
-'
            f'Цена: {price:.4f}, RSI: {rsi:.1f}')
     bot.send_message(chat_id=CHAT_ID, text=msg)
 
