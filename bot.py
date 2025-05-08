@@ -1,6 +1,7 @@
 import os
 import requests
 import time
+import asyncio
 from telegram import Bot
 from dotenv import load_dotenv
 
@@ -33,11 +34,14 @@ def calculate_rsi(closes, period=14):
 
 def get_usdt_symbols():
     r = requests.get('https://api.binance.com/api/v3/exchangeInfo')
-    return [s['symbol'] for s in r.json()['symbols']
+    if r.status_code != 200:
+        print("Ошибка при получении данных с Binance API")
+        return []
+    return [s['symbol'] for s in r.json().get('symbols', [])
             if s['status'] == 'TRADING' and s['quoteAsset'] == QUOTE_ASSET and 'UP' not in s['symbol'] and 'DOWN' not in s['symbol']]
 
 def get_ohlcv_and_rsi(symbol):
-    url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval={INTERVAL}&limit=20'
+    url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1h&limit=20'
     r = requests.get(url)
     data = r.json()
     closes = [float(c[4]) for c in data]
@@ -50,15 +54,15 @@ def get_ohlcv_and_rsi(symbol):
     rsi = calculate_rsi(closes)
     return prev_vol, curr_vol, price, rsi
 
-def send_signal(symbol, prev_vol, curr_vol, price, rsi):
+async def send_signal(symbol, prev_vol, curr_vol, price, rsi):
     msg = (
         f'📈 Сигнал по {symbol}!\n'
         f'Объём: {prev_vol:.0f} → {curr_vol:.0f}\n'
         f'Цена: {price:.4f}, RSI: {rsi:.1f}'
     )
-    bot.send_message(chat_id=CHAT_ID, text=msg)
+    await bot.send_message(chat_id=CHAT_ID, text=msg)
 
-def monitor():
+async def monitor():
     symbols = get_usdt_symbols()
     print(f"Мониторинг {len(symbols)} монет...")
     while True:
@@ -66,12 +70,15 @@ def monitor():
             try:
                 prev_vol, curr_vol, price, rsi = get_ohlcv_and_rsi(symbol)
                 if curr_vol > prev_vol * 2 and curr_vol > 100000 and rsi and rsi < 70:
-                    send_signal(symbol, prev_vol, curr_vol, price, rsi)
-                    time.sleep(1)
+                    await send_signal(symbol, prev_vol, curr_vol, price, rsi)
+                    await asyncio.sleep(1)
             except Exception as e:
                 print(f"Ошибка с {symbol}: {e}")
-        time.sleep(CHECK_INTERVAL)
+        await asyncio.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
-    bot.send_message(chat_id=CHAT_ID, text="✅ Бот запущен и работает на Render!")
-    monitor()
+    async def main():
+        await bot.send_message(chat_id=CHAT_ID, text="✅ Бот запущен и работает на Render!")
+        await monitor()
+    
+    asyncio.run(main())
