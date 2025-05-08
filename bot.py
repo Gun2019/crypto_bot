@@ -37,17 +37,26 @@ def get_usdt_symbols():
     if r.status_code != 200:
         print("Ошибка при получении данных с Binance API")
         return []
-    return [s['symbol'] for s in r.json().get('symbols', [])
+    symbols_data = r.json().get('symbols', [])
+    return [s['symbol'] for s in symbols_data
             if s['status'] == 'TRADING' and s['quoteAsset'] == QUOTE_ASSET and 'UP' not in s['symbol'] and 'DOWN' not in s['symbol']]
 
 def get_ohlcv_and_rsi(symbol):
     url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1h&limit=20'
     r = requests.get(url)
+    if r.status_code != 200:
+        print(f"Ошибка при получении данных для {symbol}")
+        return 0, 0, 0, None
+    
     data = r.json()
+    if not data:
+        return 0, 0, 0, None
+
     closes = [float(c[4]) for c in data]
     volumes = [float(c[5]) for c in data]
     if len(closes) < 15:
-        return 0, 0, 0, 100
+        return 0, 0, 0, None
+    
     prev_vol = volumes[-2]
     curr_vol = volumes[-1]
     price = closes[-1]
@@ -69,7 +78,7 @@ async def monitor():
         for symbol in symbols:
             try:
                 prev_vol, curr_vol, price, rsi = get_ohlcv_and_rsi(symbol)
-                if curr_vol > prev_vol * 2 and curr_vol > 100000 and rsi and rsi < 70:
+                if curr_vol > prev_vol * 2 and curr_vol > 100000 and rsi is not None and rsi < 70:
                     await send_signal(symbol, prev_vol, curr_vol, price, rsi)
                     await asyncio.sleep(1)
             except Exception as e:
