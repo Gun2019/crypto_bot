@@ -7,9 +7,9 @@ from dotenv import load_dotenv
 # Загружаем переменные окружения из .env
 load_dotenv()
 
-TELEGRAM_TOKEN = os.getenv("7522624625:AAHSdNSRaPM58r13AxEnlJl4okEwYKNlLKI")
-CHAT_ID = os.getenv("373789048")
-COINGLASS_API_KEY = os.getenv("COINGLASS_API_KEY")  # не используется пока
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
+COINGLASS_API_KEY = os.getenv("COINGLASS_API_KEY")
 INTERVAL = '1h'
 CHECK_INTERVAL = 600  # раз в 10 минут
 QUOTE_ASSET = 'USDT'
@@ -37,7 +37,7 @@ def get_usdt_symbols():
             if s['status'] == 'TRADING' and s['quoteAsset'] == QUOTE_ASSET and 'UP' not in s['symbol'] and 'DOWN' not in s['symbol']]
 
 def get_ohlcv_and_rsi(symbol):
-    url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1h&limit=20'
+    url = f'https://api.binance.com/api/v3/klines?symbol={symbol}&interval={INTERVAL}&limit=20'
     r = requests.get(url)
     data = r.json()
     closes = [float(c[4]) for c in data]
@@ -47,8 +47,10 @@ def get_ohlcv_and_rsi(symbol):
     prev_vol = volumes[-2]
     curr_vol = volumes[-1]
     price = closes[-1]
-    
-    def send_signal(symbol, prev_vol, curr_vol, price, rsi):
+    rsi = calculate_rsi(closes)
+    return prev_vol, curr_vol, price, rsi
+
+def send_signal(symbol, prev_vol, curr_vol, price, rsi):
     msg = (
         f'📈 Сигнал по {symbol}!\n'
         f'Объём: {prev_vol:.0f} → {curr_vol:.0f}\n'
