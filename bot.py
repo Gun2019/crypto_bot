@@ -47,6 +47,7 @@ def get_ohlcv_and_rsi(symbol):
     prev_vol = volumes[-2]
     curr_vol = volumes[-1]
     price = closes[-1]
+    
     def send_signal(symbol, prev_vol, curr_vol, price, rsi):
     msg = (
         f'📈 Сигнал по {symbol}!\n'
