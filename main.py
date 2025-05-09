@@ -3,11 +3,10 @@ import requests
 import time
 import asyncio
 import threading
-from flask import Flask
 from telegram import Bot
 from dotenv import load_dotenv
 
-# Загрузка .env
+# Загружаем .env
 load_dotenv()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -16,8 +15,6 @@ COINGLASS_API_KEY = os.getenv("COINGLASS_API_KEY")
 QUOTE_ASSET = 'USDT'
 
 bot = Bot(token=TELEGRAM_TOKEN)
-
-app = Flask(__name__)
 
 def calculate_rsi(closes, period=14):
     if len(closes) < period + 1:
@@ -72,7 +69,7 @@ async def send_signal(symbol, prev_vol, curr_vol, price, rsi, prev_oi, curr_oi):
     await bot.send_message(chat_id=CHAT_ID, text=msg)
 
 async def monitor():
-    await bot.send_message(chat_id=CHAT_ID, text="✅ Бот запущен на Render (через веб-сервер)")
+    await bot.send_message(chat_id=CHAT_ID, text="✅ Бот запущен на Render (фоновой задачей)")
     symbols = get_usdt_symbols()
     while True:
         for symbol in symbols:
@@ -93,11 +90,5 @@ def start_async_loop():
     asyncio.set_event_loop(loop)
     loop.run_until_complete(monitor())
 
-@app.route('/')
-def index():
-    return "Бот работает на Render!"
-
 if __name__ == '__main__':
     threading.Thread(target=start_async_loop).start()
-    port = int(os.environ.get('PORT', 10000))  # Получаем порт из переменной окружения, если нет - используем 10000
-    app.run(host='0.0.0.0', port=port)  # Привязываем Flask к правильному порту
